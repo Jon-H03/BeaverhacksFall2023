@@ -9,8 +9,7 @@ load_dotenv()
 
 # Fetch the token from the environment variables
 TOKEN = os.getenv('DISCORD_TOKEN')
-
-intents = discord.Intents.all()  # Updated this line
+intents = discord.Intents.all()
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
