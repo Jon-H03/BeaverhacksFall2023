@@ -34,47 +34,37 @@ async def hello(ctx):
 
 
 @bot.command()
-async def assignrole(ctx, user: discord.Member, role_name: str):
-    """
-    A bot command that allows the owner of the server to assign roles to users. This is useful
-    to assign the teacher, TA(s), and students in their designated roles.
+@commands.is_owner()
+async def assignrole(ctx, user: discord.Member, *, role_name: str):
+    # Convert to lower case for case insensitivity.
+    role_name_lower = role_name.lower()
 
-    Use the command like this: '!assignrole @User Teacher'
-    """
-    # Check if the command invoker is the server owner
-    if ctx.author != ctx.guild.owner:
-        await ctx.send("Sorry, only the server owner can use this command.")
-        return
+    # Search for the role using the lowercase role name
+    role = discord.utils.find(lambda r: r.name.lower() == role_name_lower, ctx.guild.roles)
 
-    # Check if user exists
-    if not user:
-        await ctx.send("User not found!")
-        return
-
-    # Fetch role by its name
-    role = discord.utils.get(ctx.guild.roles, name=role_name)
+    # if role does not exist in the server
     if not role:
         await ctx.send("Role not found!")
         return
 
-    # Check if user already has the role
+    # If user already has specified role
     if role in user.roles:
         await ctx.send(f"{user.name} already has the {role.name} role!")
         return
 
-    # Check bot's permissions
+    # Tell user they don't have permissions to use this command
     bot_member = ctx.guild.me
     if role >= bot_member.top_role:
-        await ctx.send("Sorry, only the owner of the server can assign roles.")
+        await ctx.send("You don't have the permissions to assign this role.")
         return
 
-    # Define allowed roles that can be assigned
-    allowed_roles = ["Student", "TA", "Teacher"]
-    if role.name not in allowed_roles:
+    # Make sure role exists
+    allowed_roles = ["student", "ta", "teacher"]
+    if role_name_lower not in allowed_roles:
         await ctx.send("This role cannot be assigned.")
         return
 
-    # Assign the role to the user
+    # Add user to role in server
     await user.add_roles(role)
     await ctx.send(f"{role.name} has been assigned to {user.name}.")
 
