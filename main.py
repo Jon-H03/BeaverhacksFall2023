@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import datetime
 import asyncio
+import csv
 
 # Load the .env file
 load_dotenv()
@@ -129,64 +130,98 @@ async def unassignrole(ctx, user: discord.Member, *, role_name: str):
     await ctx.send(f"{role.name} has been unassigned from {user.name}.")
 
 
-import asyncio
+# List of students, with names as they should be stored. Could be "Alice", "BoB", etc.
+students = ["Jondoner","Alice", "Bob", "Charlie", "David"]
 
-# Dictionary to store attendance records.
-attendance_records = {}
-
-
-@commands.has_role("Teacher")
-@bot.command(name="start")
-async def start_attendance(ctx, duration: int = 60*15):  # attendance poll will stay open for 15 mins.
-    message = await ctx.send(f"React to this message within {duration} seconds to mark your attendance!")
-    await message.add_reaction("✅")
-    # Initialize the attendance record for this message
-    attendance_records[message.id] = set()  # Now just a set of user IDs
-
-    # Wait for the duration
-    await asyncio.sleep(duration)
-
-    # Close the attendance
-    await message.edit(content="Attendance closed!")
-    not_attended = set([member.id for member in ctx.guild.members if not member.bot]) - attendance_records[message.id]
-    absentees = [bot.get_user(student_id).name for student_id in not_attended]
-
-    if absentees:
-        await ctx.send("Absentees are: " + ", ".join(absentees))
-    else:
-        await ctx.send("All members attended!")
-
-
-@bot.event
-async def on_raw_reaction_add(payload):
-    # Check if the reacted message is an attendance message
-    if payload.message_id in attendance_records:
-        # Ensure the reacting user is not the bot
-        if payload.user_id != bot.user.id:
-            attendance_records[payload.message_id].add(payload.user_id)
-
-
-# The attendance records, stored by message ID
+# The attendance records, stored by date
 attendance = {}
-
 
 @bot.command()
 @commands.has_any_role('Teacher', 'TA')
-async def startattendance(ctx, duration: int = 15):  # default is 15 seconds (for testing purposes)
+async def start_attendance(ctx, duration: int = 5):  # default is 15 seconds (for testing purposes)
+    """
+    A command that allows teachers and TAs the ability to start an attendance check for
+    the current date. The teacher can specify the amount of times in seconds that they wish to keep
+    the check open for.
+
+    To start use this command: '!start_attendance (time)', but the time will have a default value of 5 mins.
+    """
     message = await ctx.send("React to this message to mark your attendance for today!")
     await message.add_reaction("✅")
 
     # Initialize the attendance for today's date
     today = datetime.date.today()
     if today not in attendance:
-        attendance[today] = []
+        # Initialize with all students as not attended
+        attendance[today] = {student: False for student in students}
 
     # Wait for the specified duration
     await asyncio.sleep(duration)
 
-    # After the duration is over, send the closing message
+    # After the duration is over, mark students who reacted as present
+    message = await ctx.fetch_message(message.id)
+    for reaction in message.reactions:
+        if reaction.emoji == "✅":
+            async for user in reaction.users():
+                # Convert both user's name and student names to lowercase for case-insensitive check
+                attended_student = next((student for student in students if student.lower() == user.name.lower()), None)
+                if attended_student:
+                    attendance[today][attended_student] = True
+
+    # Send the closing message
     await ctx.send("Attendance has been closed!")
 
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    """
+    Bot event that checks which users reacted to the attendance message.
+    """
+    if user == bot.user:
+        return
+    if reaction.emoji == "✅":
+        today = datetime.date.today()
+        # Convert the user's name to lowercase for case-insensitive check
+        attended_student = next((student for student in students if student.lower() == user.name.lower()), None)
+        if attended_student and today in attendance:
+            attendance[today][attended_student] = True
+
+
+@bot.command()
+@commands.has_any_role('Teacher', 'TA')
+async def export_attendance(ctx):
+    """
+    Bot command that will export all current attendance data to a csv for download. This is perfect as there's no
+    current database and no intention to add one. So the teacher's can take with them their attendance records everyday.
+
+    To use this command: '!export_attendance'
+    """
+    if not attendance:
+        await ctx.send("No attendance data available.")
+        return
+
+    # Name of the temporary CSV file
+    filename = "attendance_records.csv"
+
+    # Writing to the CSV file
+    with open(filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Write header
+        writer.writerow(["Date", "Member Username", "Present"])
+
+        # Write the data
+        for date, members in attendance.items():
+            for member_name, was_present in members.items():
+                writer.writerow([date, member_name, was_present])
+
+    # Send the CSV file in the channel
+    with open(filename, 'rb') as file:
+        await ctx.send(file=discord.File(file, filename))
+
+    # Optionally, remove the temporary file after sending
+    os.remove(filename)
+##
 
 # Teacher can post assignments
 
