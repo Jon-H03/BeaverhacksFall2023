@@ -215,6 +215,29 @@ async def export_attendance(ctx):
 ##
 
 # Teacher can post assignments
+assignments = {}  # Dictionary to hold assignment details
+
+@bot.command()
+@commands.has_any_role('Teacher', 'TA')
+async def post_assignment(ctx, title: str, description: str, due_date: str):
+    """
+    A bot command that allows teachers/TAs to create an embed announcement on an assignments page.
+
+    To use this command: '!post_assignment {assignment name} {description} {due date}'
+    """
+    # Create an embed for the assignment
+    embed = discord.Embed(title=f"📚 Assignment: {title}", description=description+"\n\n", color=0x00ff00)
+    embed.add_field(name="📅 Due Date", value=due_date, inline=True)
+
+    # Post the embed in the assignments channel
+    assignments_channel = discord.utils.get(ctx.guild.channels, name='assignments')
+    if not assignments_channel:
+        await ctx.send("Couldn't find an `#assignments` channel.")
+        return
+    await assignments_channel.send(embed=embed)
+
+    # Store the assignment details in the assignments dictionary
+    assignments[title] = {"description": description, "due_date": due_date}
 
 
 # Allow teacher to schedule announacements, with reminders leading up to them.
