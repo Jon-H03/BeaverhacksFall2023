@@ -36,6 +36,13 @@ async def hello(ctx):
 @bot.command()
 @commands.has_any_role('Teacher')
 async def assignrole(ctx, user: discord.Member, *, role_name: str):
+    """
+    Allows server owner or a 'Teacher' to assign roles to other teachers, TAs, and students.
+    It is case-insensitive so it will work regardless of how "Teacher", "TA", and "Student" when
+    using the command.
+
+    To use this command: "!assignrole @User student"
+    """
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
         await ctx.send("You don't have permission to use this command.")
@@ -77,6 +84,12 @@ async def assignrole(ctx, user: discord.Member, *, role_name: str):
 @bot.command()
 @commands.has_any_role('Teacher')
 async def unassignrole(ctx, user: discord.Member, *, role_name: str):
+    """
+    Allows server owner or a 'Teacher' to unassign roles to other teachers, TAs, and students.
+    It pretty much works the same way as !assignrole except opposite.
+
+    To use this command: "!unassignrole @User student"
+    """
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
         await ctx.send("You don't have permission to use this command.")
