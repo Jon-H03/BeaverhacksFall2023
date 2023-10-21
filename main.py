@@ -172,7 +172,7 @@ attendance = {}
 
 @bot.command()
 @commands.has_any_role('Teacher', 'TA')
-async def startattendance(ctx):
+async def startattendance(ctx, duration: int = 15):  # default is 15 seconds (for testing purposes)
     message = await ctx.send("React to this message to mark your attendance for today!")
     await message.add_reaction("✅")
 
@@ -180,6 +180,12 @@ async def startattendance(ctx):
     today = datetime.date.today()
     if today not in attendance:
         attendance[today] = []
+
+    # Wait for the specified duration
+    await asyncio.sleep(duration)
+
+    # After the duration is over, send the closing message
+    await ctx.send("Attendance has been closed!")
 
 
 # Teacher can post assignments
