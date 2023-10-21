@@ -1,11 +1,28 @@
-import openai
+import discord
+from discord.ext import commands
 import os
 from dotenv import load_dotenv
 
-# Load variables from .env
+
+# Load the .env file
 load_dotenv()
 
-# Set up the API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Fetch the token from the environment variables
+TOKEN = os.getenv('DISCORD_TOKEN')
+
+intents = discord.Intents.all()  # Updated this line
+
+bot = commands.Bot(command_prefix='!', intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f'We have logged in as {bot.user}')
+
+@bot.command()
+async def hello(ctx):
+    await ctx.send('Hello, World!')
+
+
+bot.run(TOKEN)
 
 
