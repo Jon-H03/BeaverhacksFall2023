@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import os
 from dotenv import load_dotenv
 import datetime
@@ -127,5 +127,78 @@ async def unassignrole(ctx, user: discord.Member, *, role_name: str):
     # Remove the role from the user in the server
     await user.remove_roles(role)
     await ctx.send(f"{role.name} has been unassigned from {user.name}.")
+
+
+import asyncio
+
+# Dictionary to store attendance records.
+attendance_records = {}
+
+
+@commands.has_role("Teacher")
+@bot.command(name="start")
+async def start_attendance(ctx, duration: int = 60*15):  # attendance poll will stay open for 15 mins.
+    message = await ctx.send(f"React to this message within {duration} seconds to mark your attendance!")
+    await message.add_reaction("✅")
+    # Initialize the attendance record for this message
+    attendance_records[message.id] = set()  # Now just a set of user IDs
+
+    # Wait for the duration
+    await asyncio.sleep(duration)
+
+    # Close the attendance
+    await message.edit(content="Attendance closed!")
+    not_attended = set([member.id for member in ctx.guild.members if not member.bot]) - attendance_records[message.id]
+    absentees = [bot.get_user(student_id).name for student_id in not_attended]
+
+    if absentees:
+        await ctx.send("Absentees are: " + ", ".join(absentees))
+    else:
+        await ctx.send("All members attended!")
+
+
+@bot.event
+async def on_raw_reaction_add(payload):
+    # Check if the reacted message is an attendance message
+    if payload.message_id in attendance_records:
+        # Ensure the reacting user is not the bot
+        if payload.user_id != bot.user.id:
+            attendance_records[payload.message_id].add(payload.user_id)
+
+
+# The attendance records, stored by message ID
+attendance = {}
+
+
+@bot.command()
+@commands.has_any_role('Teacher', 'TA')
+async def startattendance(ctx):
+    message = await ctx.send("React to this message to mark your attendance for today!")
+    await message.add_reaction("✅")
+
+    # Initialize the attendance for today's date
+    today = datetime.date.today()
+    if today not in attendance:
+        attendance[today] = []
+
+
+# Teacher can post assignments
+
+
+# Allow teacher to schedule announacements, with reminders leading up to them.
+
+
+# Allow teacher to create special groups in server
+
+
+# Q & A feature where students can ask and vote on questions, and teachers/TAs can answer the most relevant ones.
+
+
+# Can create feedback so teachers can get opinions from students
+
+
+# Quiz/poll functionality
+
+
 
 bot.run(TOKEN)
