@@ -358,7 +358,7 @@ async def breakout(ctx, channel_name: str, *members: discord.Member):
     """
     A bot command that allows teachers/TAs to create a breakout room with specified students.
 
-    Usage: `!create_breakout {channel name} {@student1} {@student2} ...`
+    Usage: `!breakout {channel name} {@student1} {@student2} ...`
     """
     # Check if the channel already exists
     existing_channel = discord.utils.get(ctx.guild.channels, name=channel_name)
