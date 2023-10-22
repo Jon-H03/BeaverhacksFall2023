@@ -349,7 +349,29 @@ async def ask(ctx, *, question: str):
     await message.create_thread(name=f"Q from {ctx.author.name}", auto_archive_duration=1440)
 
 # Can create feedback so teachers can get opinions from students
+@bot.command()
+async def feedback(ctx):
+    """Create a hardcoded feedback poll for lectures."""
 
+    # Hardcoded values
+    question = "How was today's lecture?"
+    options = ["Great", "Good", "Okay", "Bad"][::-1]
+    reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣']
+
+    embed = discord.Embed(title="📊 Lecture Feedback Poll", description=question, color=0x3498db)
+    for i, option in enumerate(options):
+        embed.add_field(name=reactions[i], value=option, inline=False)
+
+    poll_message = await ctx.send(embed=embed)
+    for i, _ in enumerate(options):
+        await poll_message.add_reaction(reactions[i])
+
+    # Create a thread for further detailed feedback
+    thread = await poll_message.create_thread(name="Detailed Lecture Feedback", auto_archive_duration=1440)  # 24 hours before auto-archiving
+
+    # Embed for "Glows" and "Grows"
+    feedback_embed = discord.Embed(title="🌟 Detailed Feedback", description="✨ Share what you think went well... and \n 🌱 what could be improved.", color=0x2ecc71)
+    await thread.send(embed=feedback_embed)
 
 # Quiz/poll functionality
 
