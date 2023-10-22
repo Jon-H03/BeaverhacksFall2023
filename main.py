@@ -215,13 +215,13 @@ async def export_attendance(ctx):
 ##
 
 # Teacher can post assignments
-assignments = {}  # Dictionary to hold assignment details
+assignments = {}
 
 @bot.command()
 @commands.has_any_role('Teacher', 'TA')
 async def post_assignment(ctx, title: str, description: str, due_date: str):
     """
-    A bot command that allows teachers/TAs to create an embed announcement on an assignments page.
+    A bot command that allows teachers/TAs to create an embed homework assignment on an assignments page.
 
     To use this command: '!post_assignment {assignment name} {description} {due date}'
     """
@@ -240,7 +240,29 @@ async def post_assignment(ctx, title: str, description: str, due_date: str):
     assignments[title] = {"description": description, "due_date": due_date}
 
 
-# Allow teacher to schedule announacements, with reminders leading up to them.
+# Allow teacher to schedule announcements.
+@bot.command()
+@commands.has_any_role('Teacher', 'TA')
+async def announcement(ctx, title: str, description: str, date: str):
+    """
+    A bot command that allows teacher/TAs to create an embed announcement in the announcements channel.
+
+    To use this command: '!post_assignment {announcement name} {description} {date}'
+    """
+    # Check if there's an 'announcements' channel, if not, create one
+    announcements_channel = discord.utils.get(ctx.guild.channels, name='announcements')
+    if not announcements_channel:
+        overwrites = {
+            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=True, send_messages=False)
+        }
+        announcements_channel = await ctx.guild.create_text_channel('announcements', overwrites=overwrites)
+
+    # Create and send the embed message
+    embed = discord.Embed(title=title, description=description, color=0x3498db)
+    embed.add_field(name="Date", value=date)
+    await announcements_channel.send(embed=embed)
+
+    await ctx.send(f"Announcement for {date} set. Feel free to review in {announcements_channel.mention}.")
 
 
 # Allow teacher to create special groups in server
