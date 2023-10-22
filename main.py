@@ -80,14 +80,12 @@ async def help(ctx):
 
 
 @bot.command()
-@commands.has_any_role('Teacher', 'TA')
 async def generate_roles(ctx):
     """
     Generates the roles 'Teacher', 'Student', and 'TA' if they don't exist in the server.
 
     Usage: `!generate_roles`
     """
-
     existing_roles = [role.name for role in ctx.guild.roles]
     roles_to_create = ['Teacher', 'Student', 'TA']
 
@@ -100,7 +98,7 @@ async def generate_roles(ctx):
 
 
 @bot.command()
-@commands.has_any_role('Teacher')
+@commands.has_any_role('Teacher', 'TA')
 async def assign_role(ctx, user: discord.Member, *, role_name: str):
     """
     Allows server owner or a 'Teacher' to assign roles to other teachers, TAs, and students. It is case-insensitive so it will work regardless of how "Teacher", "TA", and "Student" when
@@ -147,7 +145,7 @@ async def assign_role(ctx, user: discord.Member, *, role_name: str):
 
 
 @bot.command()
-@commands.has_any_role('Teacher')
+@commands.has_any_role('Teacher', 'TA')
 async def unassign_role(ctx, user: discord.Member, *, role_name: str):
     """
     Allows server owner or a 'Teacher' to unassign roles to other teachers, TAs, and students. It pretty much works the same way as !assign_role except opposite.
