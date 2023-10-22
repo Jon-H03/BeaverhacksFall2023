@@ -13,7 +13,7 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 intents = discord.Intents.all()
 
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
 
 
 @bot.event
@@ -58,6 +58,27 @@ async def on_command_error(ctx, error):
     if isinstance(error, ignored):
         await ctx.send('Command not recognized, to see a list of commands type `!help`.')
         return
+
+
+@bot.command()
+async def help(ctx):
+    """
+    Displays a list of all commands and their descriptions.
+    To use this command: '!help'.
+    """
+    embed = discord.Embed(title="📔 Bot Commands", description="List of available commands", color=0x00ff00)
+    for cmd in bot.commands:
+        # Extract the "Usage" line from the command's docstring.
+        usage_line = next((line.strip() for line in cmd.help.splitlines() if "To use this command:" in line), None)
+
+        # If usage information is found, add it to the command's description.
+        if usage_line:
+            command_info = f"Usage: {usage_line.replace('To use this command:', '').strip()}\n\n{cmd.help}"
+        else:
+            command_info = cmd.help
+
+        embed.add_field(name=f"!{cmd.name}", value=command_info, inline=False)
+    await ctx.send(embed=embed)
 
 
 @bot.command()
@@ -113,7 +134,7 @@ async def assign_role(ctx, user: discord.Member, *, role_name: str):
 async def unassign_role(ctx, user: discord.Member, *, role_name: str):
     """
     Allows server owner or a 'Teacher' to unassign roles to other teachers, TAs, and students.
-    It pretty much works the same way as !assignrole except opposite.
+    It pretty much works the same way as !assign_role except opposite.
 
     To use this command: "!unassign_role @User student"
     """
@@ -164,11 +185,12 @@ attendance = {}
 async def start_attendance(ctx, duration: int = 5):  # default is 5 seconds (for testing purposes)
     """
     A command that allows teachers and TAs the ability to start an attendance check for
-    the current date. The teacher can specify the amount of times in seconds that they wish to keep
+    the current date. The teacher can specify the amount of time in minutes that they wish to keep
     the check open for.
 
-    To start use this command: '!start_attendance (time)', but the time will have a default value of 5 mins.
+    To start use this command: '!start_attendance (time)'
     """
+    duration *= 60
     message = await ctx.send("React to this message to mark your attendance for today!")
     await message.add_reaction("✅")
 
@@ -207,8 +229,7 @@ async def on_reaction_add(reaction, user):
 @commands.has_any_role('Teacher', 'TA')
 async def export_attendance(ctx):
     """
-    Bot command that will export all current attendance data to a csv for download. This is perfect as there's no
-    current database and no intention to add one. So the teachers can take with them their attendance records everyday.
+    Bot command that will export all current attendance data to a csv for download.
 
     To use this command: '!export_attendance'
     """
@@ -377,7 +398,11 @@ async def ask(ctx, *, question: str):
 # Can create feedback so teachers can get opinions from students
 @bot.command()
 async def feedback(ctx):
-    """Create a hardcoded feedback poll for lectures."""
+    """
+    Create a feedback poll for lectures.
+
+    To use this command
+    """
 
     # Hardcoded values
     question = "How was today's lecture?"
