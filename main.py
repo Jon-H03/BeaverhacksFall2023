@@ -83,6 +83,7 @@ async def help(ctx):
 async def generate_roles(ctx):
     """
     Generates the roles 'Teacher', 'Student', and 'TA' if they don't exist in the server.
+    If the server owner doesn't have the 'Teacher' role, it's automatically assigned to them.
 
     Usage: `!generate_roles`
     """
@@ -91,8 +92,12 @@ async def generate_roles(ctx):
 
     for role_name in roles_to_create:
         if role_name not in existing_roles:
-            await ctx.guild.create_role(name=role_name)
+            created_role = await ctx.guild.create_role(name=role_name)
             await ctx.send(f"Role '{role_name}' created!")
+            # If the created role is 'Teacher' and the server owner doesn't have it, assign it to them
+            if role_name == 'Teacher' and created_role not in ctx.guild.owner.roles:
+                await ctx.guild.owner.add_roles(created_role)
+                await ctx.send(f"Role '{role_name}' assigned to the server owner!")
         else:
             await ctx.send(f"Role '{role_name}' already exists!")
 
