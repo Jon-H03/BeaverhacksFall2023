@@ -20,7 +20,6 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def on_ready():
     """
     Simple event when bot first connects to notify the user.
-    :return:
     """
     print(f'We have logged in as {bot.user}')
 
@@ -29,8 +28,8 @@ async def on_ready():
 async def hello(ctx):
     """
     Simple command to make sure bot is functioning as intended.
-    :param ctx:
-    :return:
+
+
     """
     await ctx.send('Hello, World!')
 
@@ -287,6 +286,51 @@ async def announcement(ctx, title: str, description: str, date: str):
 
 
 # Allow teacher to create special groups in server
+@bot.command()
+@commands.has_any_role('Teacher', 'TA')
+async def breakout(ctx, channel_name: str, *members: discord.Member):
+    """
+    A bot command that allows teachers/TAs to create a breakout room with specified students.
+
+    To use this command: '!create_breakout {channel name} {@student1} {@student2} ...'
+    """
+    # Check if the channel already exists
+    existing_channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+    if existing_channel:
+        await ctx.send(f"The channel `{channel_name}` already exists.")
+        return
+
+    # Set permissions
+    overwrites = {
+        # No one can access
+        ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+
+        # Bot can access
+        ctx.guild.me: discord.PermissionOverwrite(read_messages=True),
+    }
+    # Specified members can access
+    for member in members:
+        overwrites[member] = discord.PermissionOverwrite(read_messages=True)
+
+    # Teachers and TAs can access
+    teacher_role = discord.utils.get(ctx.guild.roles, name="Teacher")
+    ta_role = discord.utils.get(ctx.guild.roles, name="TA")
+    overwrites[teacher_role] = discord.PermissionOverwrite(read_messages=True)
+    overwrites[ta_role] = discord.PermissionOverwrite(read_messages=True)
+
+    # Check if "breakouts" category exists, if not create one
+    breakouts_category = discord.utils.get(ctx.guild.categories, name="breakouts")
+    if not breakouts_category:
+        breakouts_category = await ctx.guild.create_category("breakouts")
+
+    # Create the channel within the "breakouts" category
+    try:
+        await ctx.guild.create_text_channel(channel_name, overwrites=overwrites, category=breakouts_category)
+        await ctx.send(f"Channel `{channel_name}` created successfully in 'breakouts'.")
+    except discord.Forbidden:
+        await ctx.send("I don't have permission to create channels.")
+    except discord.HTTPException:
+        await ctx.send("Failed to create channel. Please try again.")
 
 
 # Q & A feature where students can ask and vote on questions, and teachers/TAs can answer the most relevant ones.
