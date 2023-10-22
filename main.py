@@ -86,7 +86,7 @@ async def assign_role(ctx, user: discord.Member, *, role_name: str):
     Allows server owner or a 'Teacher' to assign roles to other teachers, TAs, and students. It is case-insensitive so it will work regardless of how "Teacher", "TA", and "Student" when
     using the command.
 
-    Usage: `!assign_role @User student`
+    Usage: `!assign_role {@User} {role name}`
     """
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
@@ -132,7 +132,7 @@ async def unassign_role(ctx, user: discord.Member, *, role_name: str):
     """
     Allows server owner or a 'Teacher' to unassign roles to other teachers, TAs, and students. It pretty much works the same way as !assign_role except opposite.
 
-    Usage: `!unassign_role @User student`
+    Usage: `!unassign_role {@User} {role name}`
     """
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
@@ -178,11 +178,11 @@ attendance = {}
 
 @bot.command()
 @commands.has_any_role('Teacher', 'TA')
-async def start_attendance(ctx, duration: int = 5):  # default is 5 seconds (for testing purposes)
+async def attendance(ctx, duration: int = 5):  # default is 5 minutes (for testing purposes)
     """
     A command that allows teachers and TAs the ability to start an attendance check for the current date. The teacher can specify the amount of time in minutes that they wish to keep the check open for.
 
-    Usage: `!start_attendance (time)`
+    Usage: `!attendance {time}`
     """
     message = await ctx.send("React to this message to mark your attendance for today!")
     await message.add_reaction("✅")
