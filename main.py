@@ -64,20 +64,28 @@ async def on_command_error(ctx, error):
 async def help(ctx):
     """
     Displays a list of all commands and their descriptions.
+
     To use this command: '!help'.
     """
-    embed = discord.Embed(title="📔 Bot Commands", description="List of available commands", color=0x00ff00)
+    # Using the predefined order for commands.
+    command_order = ["help", "hello", "assign_role", "unassign_role",
+                     "start_attendance", "export_attendance", "post_assignment", "announcement",
+                     "breakout", "ask", "feedback"]
+
+    # Ensure all commands are present in the order list, if not add them to the end.
     for cmd in bot.commands:
-        # Extract the "Usage" line from the command's docstring.
-        usage_line = next((line.strip() for line in cmd.help.splitlines() if "To use this command:" in line), None)
+        if cmd.name not in command_order:
+            command_order.append(cmd.name)
 
-        # If usage information is found, add it to the command's description.
-        if usage_line:
-            command_info = f"Usage: {usage_line.replace('To use this command:', '').strip()}\n\n{cmd.help}"
-        else:
-            command_info = cmd.help
+    embed = discord.Embed(title="📔 Bot Commands", description="List of available commands", color=0x00ff00)
 
-        embed.add_field(name=f"!{cmd.name}", value=command_info, inline=False)
+    # Display commands in the predefined order.
+    for cmd_name in command_order:
+        cmd = bot.get_command(cmd_name)
+        if cmd:  # This check ensures that the command exists.
+            command_info = cmd.help or "No description"
+            embed.add_field(name=f"🔴 !{cmd.name}", value=command_info, inline=False)
+
     await ctx.send(embed=embed)
 
 
@@ -85,8 +93,7 @@ async def help(ctx):
 @commands.has_any_role('Teacher')
 async def assign_role(ctx, user: discord.Member, *, role_name: str):
     """
-    Allows server owner or a 'Teacher' to assign roles to other teachers, TAs, and students.
-    It is case-insensitive so it will work regardless of how "Teacher", "TA", and "Student" when
+    Allows server owner or a 'Teacher' to assign roles to other teachers, TAs, and students. It is case-insensitive so it will work regardless of how "Teacher", "TA", and "Student" when
     using the command.
 
     To use this command: "!assign_role @User student"
