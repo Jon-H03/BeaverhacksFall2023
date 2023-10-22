@@ -249,9 +249,9 @@ async def export_attendance(ctx):
     with open(filename, 'rb') as file:
         await ctx.send(file=discord.File(file, filename))
 
-    # Optionally, remove the temporary file after sending
+    # Remove temp file after sending
     os.remove(filename)
-##
+
 
 # Teacher can post assignments
 assignments = {}
