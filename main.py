@@ -58,7 +58,7 @@ async def help(ctx):
     Usage: `!help`
     """
     # Using the predefined order for commands.
-    command_order = ["help", "hello", "assign_role", "generate_roles"
+    command_order = ["help", "hello", "generate_roles", "assign_role",
                      "unassign_role", "attendance", "export_attendance", "post_assignment",
                      "announcement", "breakout", "ask", "feedback", "quiz"]
 
