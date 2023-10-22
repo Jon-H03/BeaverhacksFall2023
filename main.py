@@ -34,15 +34,41 @@ async def hello(ctx):
     await ctx.send('Hello, World!')
 
 
+@bot.event
+async def on_command_error(ctx, error):
+    """
+    The event triggered when an error is raised while invoking a command.
+    """
+    # Checks if the command had a local error handler (a `CommandError` cog method).
+    # If it did, it won't proceed with this general handler.
+    if hasattr(ctx.command, 'on_error'):
+        return
+
+    # Prevents the command with local handlers being handled here.
+    cog = ctx.cog
+    if cog and cog._get_overridden_method(cog.cog_command_error) is not None:
+        return
+
+    # Checks for original exceptions raised and sent to `CommandInvokeError`.
+    # If nothing is found, the handler doesn't exist.
+    error = getattr(error, 'original', error)
+
+    # Anything in `ignored` will return and prevent anything happening.
+    ignored = (commands.CommandNotFound, )
+    if isinstance(error, ignored):
+        await ctx.send('Command not recognized, to see a list of commands type `!help`.')
+        return
+
+
 @bot.command()
 @commands.has_any_role('Teacher')
-async def assignrole(ctx, user: discord.Member, *, role_name: str):
+async def assign_role(ctx, user: discord.Member, *, role_name: str):
     """
     Allows server owner or a 'Teacher' to assign roles to other teachers, TAs, and students.
     It is case-insensitive so it will work regardless of how "Teacher", "TA", and "Student" when
     using the command.
 
-    To use this command: "!assignrole @User student"
+    To use this command: "!assign_role @User student"
     """
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
@@ -84,12 +110,12 @@ async def assignrole(ctx, user: discord.Member, *, role_name: str):
 
 @bot.command()
 @commands.has_any_role('Teacher')
-async def unassignrole(ctx, user: discord.Member, *, role_name: str):
+async def unassign_role(ctx, user: discord.Member, *, role_name: str):
     """
     Allows server owner or a 'Teacher' to unassign roles to other teachers, TAs, and students.
     It pretty much works the same way as !assignrole except opposite.
 
-    To use this command: "!unassignrole @User student"
+    To use this command: "!unassign_role @User student"
     """
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
@@ -358,7 +384,7 @@ async def feedback(ctx):
     options = ["Great", "Good", "Okay", "Bad"][::-1]
     reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣']
 
-    embed = discord.Embed(title="📊 Lecture Feedback Poll", description=question, color=0x3498db)
+    embed = discord.Embed(title="📊 Feedback Poll", description=question, color=0x3498db)
     for i, option in enumerate(options):
         embed.add_field(name=reactions[i], value=option, inline=False)
 
@@ -367,7 +393,7 @@ async def feedback(ctx):
         await poll_message.add_reaction(reactions[i])
 
     # Create a thread for further detailed feedback
-    thread = await poll_message.create_thread(name="Detailed Lecture Feedback", auto_archive_duration=1440)  # 24 hours before auto-archiving
+    thread = await poll_message.create_thread(name="Detailed Feedback", auto_archive_duration=1440)  # 24 hours before auto-archiving
 
     # Embed for "Glows" and "Grows"
     feedback_embed = discord.Embed(title="🌟 Detailed Feedback", description="✨ Share what you think went well... and \n 🌱 what could be improved.", color=0x2ecc71)
