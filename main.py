@@ -59,7 +59,7 @@ async def help(ctx):
     """
     # Using the predefined order for commands.
     command_order = ["help", "hello", "assign_role", "unassign_role",
-                     "start_attendance", "export_attendance", "post_assignment", "announcement",
+                     "attendance", "export_attendance", "post_assignment", "announcement",
                      "breakout", "ask", "feedback", "quiz"]
 
     # Ensure all commands are present in the order list, if not add them to the end.
@@ -77,6 +77,26 @@ async def help(ctx):
             embed.add_field(name=f"🔴 !{cmd.name}", value=command_info, inline=False)
 
     await ctx.send(embed=embed)
+
+
+@bot.command()
+@commands.has_any_role('Teacher', 'TA')
+async def generate_roles(ctx):
+    """
+    Generates the roles 'Teacher', 'Student', and 'TA' if they don't exist in the server.
+
+    Usage: `!generate_roles`
+    """
+
+    existing_roles = [role.name for role in ctx.guild.roles]
+    roles_to_create = ['Teacher', 'Student', 'TA']
+
+    for role_name in roles_to_create:
+        if role_name not in existing_roles:
+            await ctx.guild.create_role(name=role_name)
+            await ctx.send(f"Role '{role_name}' created!")
+        else:
+            await ctx.send(f"Role '{role_name}' already exists!")
 
 
 @bot.command()
@@ -177,13 +197,19 @@ attendance = {}
 
 
 @bot.command()
-@commands.has_any_role('Teacher', 'TA')
 async def attendance(ctx, duration: int = 5):  # default is 5 minutes (for testing purposes)
     """
     A command that allows teachers and TAs the ability to start an attendance check for the current date. The teacher can specify the amount of time in minutes that they wish to keep the check open for.
 
     Usage: `!attendance {time}`
     """
+
+    # Check the role of the user
+    author_roles = [role.name for role in ctx.author.roles]
+    if "Teacher" not in author_roles and "TA" not in author_roles:
+        await ctx.send("Sorry, you do not have the admin privileges associated with that command.")
+        return
+
     message = await ctx.send("React to this message to mark your attendance for today!")
     await message.add_reaction("✅")
 
