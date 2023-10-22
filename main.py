@@ -443,12 +443,12 @@ async def quiz(ctx, duration: int, question: str, *options: str):
     To use this command: `!quiz {minutes} {question} {answer1} {answer2} ...`
     """
 
-    # Make sure there are at least two options and not more than 10
-    if not (2 <= len(options) <= 10):
-        await ctx.send("You must provide between 2 and 10 options for the quiz/poll.")
+    # Make sure there are at least two options and not more than 5
+    if not (2 <= len(options) <= 5):
+        await ctx.send("You must provide between 2 and 5 options for the quiz/poll.")
         return
 
-    reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
+    reactions = ['🇦', '🇧', '🇨', '🇩', '🇪']
 
     # Formatting options for the embed
     formatted_options = '\n'.join([f"{reactions[i]}: {option}\n" for i, option in enumerate(options)])
@@ -460,7 +460,7 @@ async def quiz(ctx, duration: int, question: str, *options: str):
     for i, _ in enumerate(options):
         await poll_message.add_reaction(reactions[i])
 
-    # Wait for the specified duration
+    # Wait for the specified duration (in minutes)
     await asyncio.sleep(duration * 60)
 
     # Refresh the poll_message to get the updated reactions
@@ -469,7 +469,7 @@ async def quiz(ctx, duration: int, question: str, *options: str):
     results = {}
     for i, option in enumerate(options):
         reaction = discord.utils.get(poll_message.reactions, emoji=reactions[i])
-        results[option] = reaction.count - 1  # subtract 1 to exclude the bot's reaction
+        results[option] = reaction.count - 1  # subtract 1 to exclude bot's reaction
 
     # Display the results
     results_embed = discord.Embed(title="📈 Results", description=f"**{question}**", color=0x2ecc71)
