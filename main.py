@@ -334,7 +334,19 @@ async def breakout(ctx, channel_name: str, *members: discord.Member):
 
 
 # Q & A feature where students can ask and vote on questions, and teachers/TAs can answer the most relevant ones.
+@bot.command()
+async def ask(ctx, *, question: str):
+    """
+    Allows students to ask questions and creates an embed and thread for them.
 
+    To use this command: '!ask {question}'
+    """
+    embed = discord.Embed(title="❓ New Question", description=question, color=0xf1c40f)
+    embed.set_footer(text=f"Asked by {ctx.author.name}")
+    message = await ctx.send(embed=embed)
+
+    # Create a thread for this question. The thread lasts for 1 day by default.
+    await message.create_thread(name=f"Q from {ctx.author.name}", auto_archive_duration=1440)
 
 # Can create feedback so teachers can get opinions from students
 
