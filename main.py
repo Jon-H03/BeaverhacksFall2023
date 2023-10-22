@@ -396,7 +396,6 @@ async def feedback(ctx):
 
     Usage: `!feedback`.
     """
-
     question = "How was today's lecture?"
     options = ["Great", "Good", "Okay", "Bad"][::-1]
     reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣']
@@ -426,7 +425,6 @@ async def quiz(ctx, duration: int, question: str, *options: str):
 
     Usage: `!quiz {minutes} {question} {answer1} {answer2} ...`
     """
-
     # Make sure there are at least two options and not more than 5
     if not (2 <= len(options) <= 5):
         await ctx.send("You must provide between 2 and 5 options for the quiz/poll.")
