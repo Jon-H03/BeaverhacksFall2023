@@ -180,8 +180,7 @@ attendance = {}
 @commands.has_any_role('Teacher', 'TA')
 async def start_attendance(ctx, duration: int = 5):  # default is 5 seconds (for testing purposes)
     """
-    A command that allows teachers and TAs the ability to start an attendance check for the current date. The teacher can specify the amount of time in minutes that they wish to keep
-    the check open for.
+    A command that allows teachers and TAs the ability to start an attendance check for the current date. The teacher can specify the amount of time in minutes that they wish to keep the check open for.
 
     Usage: `!start_attendance (time)`
     """
