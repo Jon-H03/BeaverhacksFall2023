@@ -27,11 +27,12 @@ async def on_ready():
 @bot.command()
 async def hello(ctx):
     """
-    Simple command to make sure bot is functioning as intended.
+    Simple command to make bot give welcome message.
 
-
+    To use this command: `!hello`.
     """
-    await ctx.send('Hello, World!')
+    await ctx.send("Hello, I'm Teacher's Pet, and you can count on me to assist with performing classroom functions and keeping things orderly.\n\n"
+                   "To see a list of my possible commands, type `!help`.")
 
 
 @bot.event
@@ -65,7 +66,7 @@ async def help(ctx):
     """
     Displays a list of all commands and their descriptions.
 
-    To use this command: '!help'.
+    To use this command: `!help`.
     """
     # Using the predefined order for commands.
     command_order = ["help", "hello", "assign_role", "unassign_role",
@@ -96,7 +97,7 @@ async def assign_role(ctx, user: discord.Member, *, role_name: str):
     Allows server owner or a 'Teacher' to assign roles to other teachers, TAs, and students. It is case-insensitive so it will work regardless of how "Teacher", "TA", and "Student" when
     using the command.
 
-    To use this command: "!assign_role @User student"
+    To use this command: `!assign_role @User student`.
     """
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
@@ -143,7 +144,7 @@ async def unassign_role(ctx, user: discord.Member, *, role_name: str):
     Allows server owner or a 'Teacher' to unassign roles to other teachers, TAs, and students.
     It pretty much works the same way as !assign_role except opposite.
 
-    To use this command: "!unassign_role @User student"
+    To use this command: `!unassign_role @User student`.
     """
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
@@ -195,7 +196,7 @@ async def start_attendance(ctx, duration: int = 5):  # default is 5 seconds (for
     the current date. The teacher can specify the amount of time in minutes that they wish to keep
     the check open for.
 
-    To start use this command: '!start_attendance (time)'
+    To start use this command: `!start_attendance (time)`.
     """
     duration *= 60
     message = await ctx.send("React to this message to mark your attendance for today!")
@@ -238,7 +239,7 @@ async def export_attendance(ctx):
     """
     Bot command that will export all current attendance data to a csv for download.
 
-    To use this command: '!export_attendance'
+    To use this command: `!export_attendance`.
     """
     if not attendance:
         await ctx.send("No attendance data available.")
@@ -277,7 +278,7 @@ async def post_assignment(ctx, title: str, description: str, due_date: str):
     """
     A bot command that allows teachers/TAs to create an embed homework assignment on an assignments page.
 
-    To use this command: '!post_assignment {assignment name} {description} {due date}'
+    To use this command: `!post_assignment {assignment name} {description} {due date}`.
     """
     # Create an embed for the assignment
     embed = discord.Embed(title=f"📚 Assignment: {title}", description=description + "\n\n", color=0x00ff00)
@@ -309,7 +310,7 @@ async def announcement(ctx, title: str, description: str, date: str):
     """
     A bot command that allows teacher/TAs to create an embed announcement in the announcements channel.
 
-    To use this command: '!post_assignment {announcement name} {description} {date}'
+    To use this command: `!post_assignment {announcement name} {description} {date}`.
     """
     # Check if there's an 'announcements' channel, if not, create one
     announcements_channel = discord.utils.get(ctx.guild.channels, name='announcements')
@@ -346,7 +347,7 @@ async def breakout(ctx, channel_name: str, *members: discord.Member):
     """
     A bot command that allows teachers/TAs to create a breakout room with specified students.
 
-    To use this command: '!create_breakout {channel name} {@student1} {@student2} ...'
+    To use this command: `!create_breakout {channel name} {@student1} {@student2} ...`.
     """
     # Check if the channel already exists
     existing_channel = discord.utils.get(ctx.guild.channels, name=channel_name)
@@ -393,7 +394,7 @@ async def ask(ctx, *, question: str):
     """
     Allows students to ask questions and creates an embed and thread for them.
 
-    To use this command: '!ask {question}'
+    To use this command: `!ask {question}`.
     """
     embed = discord.Embed(title="❓ New Question", description=question, color=0xf1c40f)
     embed.set_footer(text=f"Asked by {ctx.author.name}")
@@ -408,7 +409,7 @@ async def feedback(ctx):
     """
     Create a feedback poll for lectures.
 
-    To use this command
+    To use this command: `!feedback`.
     """
 
     # Hardcoded values
@@ -431,8 +432,51 @@ async def feedback(ctx):
     feedback_embed = discord.Embed(title="🌟 Detailed Feedback", description="✨ Share what you think went well... and \n 🌱 what could be improved.", color=0x2ecc71)
     await thread.send(embed=feedback_embed)
 
-# Quiz/poll functionality
 
+# Quiz/poll functionality
+@bot.command()
+@commands.has_any_role('Teacher', 'TA')  # Only Teachers and TAs can create quizzes/polls
+async def quiz(ctx, duration: int, question: str, *options: str):
+    """
+    Create a quiz/poll with a question and multiple choice answers. Duration is in minutes.
+
+    To use this command: `!quiz {minutes} {question} {answer1} {answer2} ...`
+    """
+
+    # Make sure there are at least two options and not more than 10
+    if not (2 <= len(options) <= 10):
+        await ctx.send("You must provide between 2 and 10 options for the quiz/poll.")
+        return
+
+    reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
+
+    # Formatting options for the embed
+    formatted_options = '\n'.join([f"{reactions[i]}: {option}\n" for i, option in enumerate(options)])
+    embed_description = f"**{question}**\n\n{formatted_options}"
+
+    embed = discord.Embed(title="❗❗ Pop Quiz ❗❗", description=embed_description, color=0x3498db)
+
+    poll_message = await ctx.send(embed=embed)
+    for i, _ in enumerate(options):
+        await poll_message.add_reaction(reactions[i])
+
+    # Wait for the specified duration
+    await asyncio.sleep(duration * 60)
+
+    # Refresh the poll_message to get the updated reactions
+    poll_message = await ctx.channel.fetch_message(poll_message.id)
+
+    results = {}
+    for i, option in enumerate(options):
+        reaction = discord.utils.get(poll_message.reactions, emoji=reactions[i])
+        results[option] = reaction.count - 1  # subtract 1 to exclude the bot's reaction
+
+    # Display the results
+    results_embed = discord.Embed(title="📈 Results", description=f"**{question}**", color=0x2ecc71)
+    for option, count in results.items():
+        results_embed.add_field(name=option, value=f"{count} votes", inline=False)
+
+    await ctx.send(embed=results_embed)
 
 
 bot.run(TOKEN)
