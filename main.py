@@ -217,6 +217,7 @@ async def export_attendance(ctx):
 # Teacher can post assignments
 assignments = {}
 
+
 @bot.command()
 @commands.has_any_role('Teacher', 'TA')
 async def post_assignment(ctx, title: str, description: str, due_date: str):
@@ -226,14 +227,21 @@ async def post_assignment(ctx, title: str, description: str, due_date: str):
     To use this command: '!post_assignment {assignment name} {description} {due date}'
     """
     # Create an embed for the assignment
-    embed = discord.Embed(title=f"📚 Assignment: {title}", description=description+"\n\n", color=0x00ff00)
+    embed = discord.Embed(title=f"📚 Assignment: {title}", description=description + "\n\n", color=0x00ff00)
     embed.add_field(name="📅 Due Date", value=due_date, inline=True)
 
-    # Post the embed in the assignments channel
+    # Check if there's an 'assignments' channel, if not, create one
     assignments_channel = discord.utils.get(ctx.guild.channels, name='assignments')
     if not assignments_channel:
-        await ctx.send("Couldn't find an `#assignments` channel.")
-        return
+        bot_member = ctx.guild.me  # Get the bot member object
+        overwrites = {
+            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=True, send_messages=False),
+            bot_member: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+        category = discord.utils.get(ctx.guild.categories, name="Text Channels")
+        assignments_channel = await ctx.guild.create_text_channel('assignments', overwrites=overwrites,
+                                                                  category=category)
+
     await assignments_channel.send(embed=embed)
 
     # Store the assignment details in the assignments dictionary
@@ -241,6 +249,7 @@ async def post_assignment(ctx, title: str, description: str, due_date: str):
 
 
 # Allow teacher to schedule announcements.
+
 @bot.command()
 @commands.has_any_role('Teacher', 'TA')
 async def announcement(ctx, title: str, description: str, date: str):
@@ -251,11 +260,23 @@ async def announcement(ctx, title: str, description: str, date: str):
     """
     # Check if there's an 'announcements' channel, if not, create one
     announcements_channel = discord.utils.get(ctx.guild.channels, name='announcements')
+    bot_member = ctx.guild.me
     if not announcements_channel:
         overwrites = {
-            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=True, send_messages=False)
+            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=True, send_messages=False),
+            bot_member: discord.PermissionOverwrite(read_messages=True, send_messages=True)
         }
-        announcements_channel = await ctx.guild.create_text_channel('announcements', overwrites=overwrites)
+
+        # Get the category of the default "general" channel
+        general_channel = discord.utils.get(ctx.guild.text_channels, name='general')
+        if general_channel:
+            category = general_channel.category
+        else:
+            # If for some reason "general" doesn't exist, create a new "text channels" category
+            category = await ctx.guild.create_category(name='text channels')
+
+        announcements_channel = await ctx.guild.create_text_channel('announcements', overwrites=overwrites,
+                                                                    category=category)
 
     # Create and send the embed message
     embed = discord.Embed(title=title, description=description, color=0x3498db)
