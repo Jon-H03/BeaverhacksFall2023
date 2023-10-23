@@ -226,8 +226,12 @@ async def attendance(ctx, duration: int = None):
     await message.add_reaction("✅")
 
     # Get all members with the "Student" role
+    await ctx.guild.fetch_roles()
     student_role = discord.utils.get(ctx.guild.roles, name="Student")
-    students = [member.name for member in student_role.members]
+
+    # Fetching all members and filtering those with the "Student" role
+    all_members = await ctx.guild.fetch_members().flatten()
+    students = [member.name for member in all_members if student_role in member.roles]
 
     # Initialize the attendance for today's date
     today = datetime.date.today()
@@ -235,8 +239,8 @@ async def attendance(ctx, duration: int = None):
         # Initialize every student's attendance to False
         attendance[today] = {student: False for student in students}
 
-    # Wait for the specified duration
-    await asyncio.sleep(duration)
+    # Wait for the specified duration (in minutes)
+    await asyncio.sleep(duration * 60)
 
     # After the duration is over, send the closing message
     await ctx.send("Attendance has been closed!")
