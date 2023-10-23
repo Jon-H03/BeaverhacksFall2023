@@ -250,8 +250,10 @@ async def attendance(ctx, duration: int = None):
         # Initialize every student's attendance to False
         attendance[today] = {student: False for student in students}
 
+    await ctx.send(f"Starting attendance for {duration} minutes...")  # Debugging message
     # Wait for the specified duration (in minutes)
     await asyncio.sleep(duration * 60)
+    await ctx.send("Duration ended.")  # Debugging message
 
     # After the duration is over, send the closing message
     await ctx.send("Attendance has been closed!")
