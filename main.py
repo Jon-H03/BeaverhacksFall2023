@@ -216,6 +216,7 @@ async def attendance(ctx, duration: int = None):
     """
     if not duration:
         duration = 1
+
     # Check the role of the user
     author_roles = [role.name for role in ctx.author.roles]
     if "Teacher" not in author_roles and "TA" not in author_roles:
@@ -227,14 +228,21 @@ async def attendance(ctx, duration: int = None):
 
     # Get all members with the "Student" role
     await ctx.guild.fetch_roles()
-    await ctx.send("Roles fetched!")
-
     student_role = discord.utils.get(ctx.guild.roles, name="Student")
 
-    # Fetching all members and filtering those with the "Student" role
-    all_members = await ctx.guild.fetch_members().flatten()
-    students = [member.name for member in all_members if student_role in member.roles]
-    await ctx.send(f"Total students: {len(students)}")
+    # Try to fetch members and handle exceptions
+    try:
+        all_members = await ctx.guild.fetch_members().flatten()
+        await ctx.send(f"Fetched {len(all_members)} members!")
+
+        students = []
+        for member in all_members:
+            if student_role in member.roles:
+                students.append(member.name)
+        await ctx.send(f"Found {len(students)} students!")
+    except Exception as e:
+        await ctx.send(f"Error: {e}")
+        return
 
     # Initialize the attendance for today's date
     today = datetime.date.today()
