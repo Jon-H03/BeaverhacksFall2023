@@ -273,12 +273,15 @@ async def export_attendance(ctx):
             for member_name, was_present in members.items():
                 writer.writerow([date, member_name, was_present])
 
+    # Define the full path to the file
+    filepath = os.path.join(os.getcwd(), filename)
+
     # Send the CSV file in the channel
-    with open(filename, 'rb') as file:
+    with open(filepath, 'rb') as file:
         await ctx.send(file=discord.File(file, filename))
 
     # Remove temp file after sending
-    os.remove(filename)
+    os.remove(filepath)
 
 
 # Teacher can post assignments
