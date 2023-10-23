@@ -112,7 +112,7 @@ async def assign_role(ctx, user: discord.Member, *, role_name: str):
     Usage: `!assign_role {@User} {role name}`
     """
     # Refresh the role list to ensure we have the latest roles from the server
-    await ctx.guild.fetch_roles()
+    roles = await ctx.guild.fetch_roles()
 
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
@@ -123,7 +123,7 @@ async def assign_role(ctx, user: discord.Member, *, role_name: str):
     role_name_lower = role_name.lower()
 
     # Search for the role using the lowercase role name
-    role = discord.utils.find(lambda r: r.name.lower() == role_name_lower, ctx.guild.roles)
+    role = discord.utils.find(lambda r: r.name.lower() == role_name_lower, roles)
 
     # if role does not exist in the server
     if not role:
