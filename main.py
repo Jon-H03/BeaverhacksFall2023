@@ -127,7 +127,7 @@ async def assign_role(ctx, user: discord.Member, *, role_name: str):
     # Convert to lower case for case insensitivity.
     role_name_lower = role_name.lower()
     # Search for the role using the lowercase role name
-    role = discord.utils.find(lambda r: r.name.lower() == role_name_lower, roles)
+    role = discord.utils.find(lambda r: r.name.lower() == role_name_lower, ctx.guild.roles)
 
     # if role does not exist in the server
     if not role:
