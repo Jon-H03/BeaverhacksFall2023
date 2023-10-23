@@ -111,18 +111,10 @@ async def assign_role(ctx, user: discord.Member, *, role_name: str):
 
     Usage: `!assign_role {@User} {role name}`
     """
-    # Strip any quotes from the role_name
-    role_name = role_name.strip('"')
-
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
         await ctx.send("You don't have permission to use this command.")
         return
-
-
-    # Diagnostic message
-    all_roles = [role.name for role in ctx.guild.roles]
-    await ctx.send(f"Roles available: {', '.join(all_roles)}")
 
     # Convert to lower case for case insensitivity.
     role_name_lower = role_name.lower()
@@ -164,6 +156,9 @@ async def unassign_role(ctx, user: discord.Member, *, role_name: str):
 
     Usage: `!unassign_role {@User} {role name}`
     """
+    # Strip any quotes from the role_name
+    role_name = role_name.strip('"')
+
     # Refresh the role list to ensure we have the latest roles from the server
     await ctx.guild.fetch_roles()
 
