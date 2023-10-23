@@ -208,13 +208,14 @@ attendance = {}
 
 
 @bot.command()
-async def attendance(ctx, duration: int = 5):  # default is 5 minutes (for testing purposes)
+async def attendance(ctx, duration: int = None):
     """
     A command that allows teachers and TAs the ability to start an attendance check for the current date. The teacher can specify the amount of time in minutes that they wish to keep the check open for.
 
     Usage: `!attendance {time}`
     """
-
+    if not duration:
+        duration = 1
     # Check the role of the user
     author_roles = [role.name for role in ctx.author.roles]
     if "Teacher" not in author_roles and "TA" not in author_roles:
