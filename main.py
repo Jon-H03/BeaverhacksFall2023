@@ -208,14 +208,12 @@ attendance = {}
 
 
 @bot.command()
-async def attendance(ctx, duration: int = None):
+async def attendance(ctx, duration: int = 1):
     """
-    A command that allows teachers and TAs the ability to start an attendance check for the current date. The teacher can specify the amount of time in minutes that they wish to keep the check open for.
+    A command that allows teachers and TAs the ability to start an attendance check for the current date.
 
     Usage: `!attendance {time}`
     """
-    if not duration:
-        duration = 1
 
     # Check the role of the user
     author_roles = [role.name for role in ctx.author.roles]
@@ -226,25 +224,13 @@ async def attendance(ctx, duration: int = None):
     message = await ctx.send("React to this message to mark your attendance for today!")
     await message.add_reaction("✅")
 
-    # Get all members with the "Student" role
-    await ctx.guild.fetch_roles()
-    student_role = discord.utils.get(ctx.guild.roles, name="Student")
-
-    students = [member for member in ctx.guild.members if student_role in member.roles]
-
-    # Initialize the attendance for today's date
-    today = datetime.date.today()
-    if today not in attendance:
-        # Initialize every student's attendance to False
-        attendance[today] = {student: False for student in students}
-
     await ctx.send(f"Starting attendance for {duration} minutes...")
+
     # Wait for the specified duration (in minutes)
     await asyncio.sleep(duration * 60)
 
-    # After the duration, send the closing message
+    # After the duration is over, send the closing message
     await ctx.send("Attendance has been closed!")
-
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -253,11 +239,13 @@ async def on_reaction_add(reaction, user):
     """
     if user == bot.user:
         return
+
     if reaction.emoji == "✅":
         today = datetime.date.today()
         # Check if the reacting student's name is in the attendance record for today
-        if today in attendance and user.name in attendance[today]:
-            attendance[today][user.name] = True
+        if today not in attendance:
+            attendance[today] = {}
+        attendance[today][user.name] = True
 
 
 @bot.command()
