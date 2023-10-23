@@ -227,11 +227,14 @@ async def attendance(ctx, duration: int = None):
 
     # Get all members with the "Student" role
     await ctx.guild.fetch_roles()
+    await ctx.send("Roles fetched!")
+
     student_role = discord.utils.get(ctx.guild.roles, name="Student")
 
     # Fetching all members and filtering those with the "Student" role
     all_members = await ctx.guild.fetch_members().flatten()
     students = [member.name for member in all_members if student_role in member.roles]
+    await ctx.send(f"Total students: {len(students)}")
 
     # Initialize the attendance for today's date
     today = datetime.date.today()
