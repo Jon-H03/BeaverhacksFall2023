@@ -224,8 +224,6 @@ async def attendance(ctx, duration: int = 1):
     message = await ctx.send("React to this message to mark your attendance for today!")
     await message.add_reaction("✅")
 
-    await ctx.send(f"Starting attendance for {duration} minutes...")
-
     # Wait for the specified duration (in minutes)
     await asyncio.sleep(duration * 60)
 
