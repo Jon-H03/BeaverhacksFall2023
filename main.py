@@ -254,37 +254,34 @@ async def export_attendance(ctx):
 
     Usage: `!export_attendance`
     """
-    try:
-        if not attendance:
-            await ctx.send("No attendance data available.")
-            return
+    if not attendance:
+        await ctx.send("No attendance data available.")
+        return
 
-        # Name of the temporary CSV file
-        filename = "attendance_records.csv"
+    # Name of the temporary CSV file
+    filename = "attendance_records.csv"
 
-        # Writing to the CSV file
-        with open(filename, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
+    # Writing to the CSV file
+    with open(filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
 
-            # Write header
-            writer.writerow(["Date", "Member Username", "Present"])
+        # Write header
+        writer.writerow(["Date", "Member Username", "Present"])
 
-            # Write the data
-            for date, members in attendance.items():
-                for member_name, was_present in members.items():
-                    writer.writerow([date, member_name, was_present])
+        # Write the data
+        for date, members in attendance.items():
+            for member_name, was_present in members.items():
+                writer.writerow([date, member_name, was_present])
 
-        # Define the full path to the file
-        filepath = os.path.join(os.getcwd(), filename)
+    # Define the full path to the file
+    filepath = os.path.join(os.getcwd(), filename)
 
-        # Send the CSV file in the channel
-        with open(filepath, 'rb') as file:
-            await ctx.send(file=discord.File(file, filename))
+    # Send the CSV file in the channel
+    with open(filepath, 'rb') as file:
+        await ctx.send(file=discord.File(file, filename))
 
-        # Remove temp file after sending
-        os.remove(filepath)
-    except Exception as e:
-        await ctx.send(f"An error occurred: {e}")
+    # Remove temp file after sending
+    os.remove(filepath)
 
 
 # Teacher can post assignments
