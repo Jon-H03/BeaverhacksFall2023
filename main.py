@@ -241,19 +241,27 @@ async def attendance(ctx, duration: int = None):
         students = [member.name for member in all_members if student_role in member.roles]
         await ctx.send(f"Found {len(students)} students!")
     except Exception as e:
-        await ctx.send(f"Error: {e}")
+        await ctx.send(f"Error fetching members: {e}")
         return
 
-    # Initialize the attendance for today's date
-    today = datetime.date.today()
-    if today not in attendance:
-        # Initialize every student's attendance to False
-        attendance[today] = {student: False for student in students}
+    try:
+        # Initialize the attendance for today's date
+        today = datetime.date.today()
+        if today not in attendance:
+            # Initialize every student's attendance to False
+            attendance[today] = {student: False for student in students}
+        await ctx.send("Attendance initialized for today.")  # Debugging message
+    except Exception as e:
+        await ctx.send(f"Error initializing attendance: {e}")
+        return
 
     await ctx.send(f"Starting attendance for {duration} minutes...")  # Debugging message
     # Wait for the specified duration (in minutes)
-    await asyncio.sleep(duration * 60)
-    await ctx.send("Duration ended.")  # Debugging message
+    try:
+        await asyncio.sleep(duration * 60)
+        await ctx.send("Duration ended.")  # Debugging message
+    except Exception as e:
+        await ctx.send(f"Error during sleep duration: {e}")
 
     # After the duration is over, send the closing message
     await ctx.send("Attendance has been closed!")
