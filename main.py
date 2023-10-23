@@ -235,7 +235,7 @@ async def attendance(ctx, duration: int = 5):  # default is 5 minutes (for testi
         attendance[today] = {student: False for student in students}
 
     # Wait for the specified duration
-    await asyncio.sleep(duration*60)
+    await asyncio.sleep(duration)
 
     # After the duration is over, send the closing message
     await ctx.send("Attendance has been closed!")
