@@ -111,19 +111,21 @@ async def assign_role(ctx, user: discord.Member, *, role_name: str):
 
     Usage: `!assign_role {@User} {role name}`
     """
-    # Refresh the role list to ensure we have the latest roles from the server
-    roles = await ctx.guild.fetch_roles()
+    # Strip any quotes from the role_name
+    role_name = role_name.strip('"')
 
     # Make sure person using command is the server owner or has role 'Teacher'
     if not ctx.author == ctx.guild.owner and not discord.utils.get(ctx.author.roles, name="Teacher"):
         await ctx.send("You don't have permission to use this command.")
         return
 
-    # Convert to lower case for case insensitivity.
-    role_name_lower = role_name.lower()
+
     # Diagnostic message
     all_roles = [role.name for role in ctx.guild.roles]
     await ctx.send(f"Roles available: {', '.join(all_roles)}")
+
+    # Convert to lower case for case insensitivity.
+    role_name_lower = role_name.lower()
     # Search for the role using the lowercase role name
     role = discord.utils.find(lambda r: r.name.lower() == role_name_lower, roles)
 
