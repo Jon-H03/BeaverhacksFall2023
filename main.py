@@ -230,42 +230,20 @@ async def attendance(ctx, duration: int = None):
     await ctx.guild.fetch_roles()
     student_role = discord.utils.get(ctx.guild.roles, name="Student")
 
-    # Try to fetch members and handle exceptions
-    try:
-        all_members = []
-        async for member in ctx.guild.fetch_members():
-            all_members.append(member)
+    students = [member for member in ctx.guild.members if student_role in member.roles]
 
-        await ctx.send(f"Fetched {len(all_members)} members!")
+    # Initialize the attendance for today's date
+    today = datetime.date.today()
+    if today not in attendance:
+        # Initialize every student's attendance to False
+        attendance[today] = {student: False for student in students}
 
-        students = [member.name for member in all_members if student_role in member.roles]
-        await ctx.send(f"Found {len(students)} students!")
-    except Exception as e:
-        await ctx.send(f"Error fetching members: {e}")
-        return
-
-    try:
-        # Initialize the attendance for today's date
-        today = datetime.date.today()
-        if today not in attendance:
-            # Initialize every student's attendance to False
-            attendance[today] = {student: False for student in students}
-        await ctx.send("Attendance initialized for today.")  # Debugging message
-    except Exception as e:
-        await ctx.send(f"Error initializing attendance: {e}")
-        return
-
-    await ctx.send(f"Starting attendance for {duration} minutes...")  # Debugging message
+    await ctx.send(f"Starting attendance for {duration} minutes...")
     # Wait for the specified duration (in minutes)
-    try:
-        await asyncio.sleep(duration * 60)
-        await ctx.send("Duration ended.")  # Debugging message
-    except Exception as e:
-        await ctx.send(f"Error during sleep duration: {e}")
+    await asyncio.sleep(duration * 60)
 
-    # After the duration is over, send the closing message
+    # After the duration, send the closing message
     await ctx.send("Attendance has been closed!")
-
 
 
 @bot.event
