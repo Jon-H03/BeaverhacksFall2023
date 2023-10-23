@@ -232,13 +232,13 @@ async def attendance(ctx, duration: int = None):
 
     # Try to fetch members and handle exceptions
     try:
-        all_members = await ctx.guild.fetch_members().flatten()
+        all_members = []
+        async for member in ctx.guild.fetch_members():
+            all_members.append(member)
+
         await ctx.send(f"Fetched {len(all_members)} members!")
 
-        students = []
-        for member in all_members:
-            if student_role in member.roles:
-                students.append(member.name)
+        students = [member.name for member in all_members if student_role in member.roles]
         await ctx.send(f"Found {len(students)} students!")
     except Exception as e:
         await ctx.send(f"Error: {e}")
