@@ -267,6 +267,7 @@ async def attendance(ctx, duration: int = None):
     await ctx.send("Attendance has been closed!")
 
 
+
 @bot.event
 async def on_reaction_add(reaction, user):
     """
